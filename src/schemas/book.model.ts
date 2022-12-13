@@ -1,30 +1,45 @@
-import {Schema, model} from "mongoose";
+import { Schema, model } from "mongoose";
+
 
 
 interface IBook {
 
- title: string;
+    title: string;
 
- description: string;
+    description: string;
 
- author: string;
+    author: object;
+
+    keywords: object[];
 
 }
 
 
+
+const keywordsSchema = new Schema({
+
+    keyword: String
+
+})
+
+
+
 const bookSchema = new Schema<IBook>({
 
- title: String,
+    title: String,
 
- description: String,
+    description: String,
 
- author: String,
+    author: { type:Schema.Types.ObjectId, ref: "Author" },
+
+    keywords: [keywordsSchema],
 
 })
 
 
 
 const Book = model<IBook>('Book', bookSchema);
+
 
 
 export { Book };

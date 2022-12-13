@@ -3,6 +3,7 @@ import { Router } from 'express';
 const bookRoutes = Router();
 
 import { Book } from "../schemas/book.model";
+import { Author } from '../schemas/author.model';
 
 import multer from 'multer';
 
@@ -20,13 +21,30 @@ bookRoutes.get('/create', (req, res) => {
 bookRoutes.post('/create', upload.none(), async (req, res) => {
 
     try {
-        console.log(req.body);
 
-        // const bookNew = new Book(req.body);
+        const authorNew = new Author({
 
-        // const book = await bookNew.save();
+            name: req.body.author
 
-        const book = await Book.create(req.body);
+        })
+
+        const bookNew = new Book({
+
+            title: req.body.title,
+
+            description: req.body.description,
+
+            author: authorNew,
+
+        });
+
+        bookNew.keywords.push({ keyword: req.body.keyword });
+
+        const p1 = authorNew.save();
+
+        const p2 = bookNew.save();
+
+        let [author, book] = await Promise.all([p1, p2]);
 
         if (book) {
 
@@ -90,7 +108,13 @@ bookRoutes.get('/list', async (req, res) => {
 
     try {
 
-        const books = await Book.find();
+        const books = await Book.find().populate({
+
+            path: "author", select: "name"
+
+        });
+        console.log(books);
+        
 
         res.render("listBook", { books: books });
 
@@ -136,9 +160,9 @@ bookRoutes.delete('/delete/:id', async (req, res) => {
 
     try {
 
-        const book = await Book.findOne({ _id: req.params.id});
+        const book = await Book.findOne({ _id: req.params.id });
         console.log(book);
-        
+
 
         if (book) {
 
